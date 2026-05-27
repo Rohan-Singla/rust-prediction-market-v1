@@ -1,13 +1,13 @@
-The goal is to build a clean, production-style MVP in pure Rust using Axum, Tokio, and in-memory state.
+# Prediction Market Exchange Engine (Rust, Axum, Tokio)
 
-This is NOT a blockchain smart contract.
-This is a centralized prediction market exchange engine inspired by Polymarket/Kalshi.
+> **Note:** This is *not* a blockchain smart contract.  
+> This project is a centralized prediction market exchange engine inspired by Polymarket and Kalshi.
 
-========================
-PROJECT GOAL
-========================
+---
 
-Build a binary prediction market backend where users can:
+## Project Goal
+
+Build a **binary prediction market backend** where users can:
 
 1. Create prediction markets
 2. Split USD into YES/NO shares
@@ -17,50 +17,45 @@ Build a binary prediction market backend where users can:
 6. Resolve markets
 7. Claim winnings
 
-The architecture should resemble a simplified exchange engine.
+The architecture is a simplified exchange engine.
 
-========================
-TECH STACK
-========================
+---
 
-- Rust
-- Axum
-- Tokio
-- Serde
-- UUID
-- chrono
+## Tech Stack
 
-State management:
-- Arc<Mutex<AppState>>
+- **Rust**
+- **Axum** (web framework)
+- **Tokio** (async runtime)
+- **Serde** (serialization/deserialization)
+- **UUID**
+- **chrono** (date/time)
+- **State Management:** `Arc<Mutex<AppState>>`
+- No database initially — all data stored **in-memory**
 
-No database initially.
-All data stored in-memory.
+---
 
-========================
-CORE CONCEPTS
-========================
+## Core Concepts
 
 Each binary market has:
-- YES shares
-- NO shares
+- **YES shares**
+- **NO shares**
 
 At settlement:
-- winning side = $1/share
-- losing side = $0/share
-
-Invariant:
-YES + NO = $1
+- Winning side: **$1/share**
+- Losing side: **$0/share**
+- **Invariant:** YES + NO = $1
 
 Users can:
-- SPLIT cash into YES + NO
-- MERGE YES + NO back into cash
+- **Split** cash into YES + NO
+- **Merge** YES + NO back into cash
 
-========================
-PROJECT STRUCTURE
-========================
+---
 
-Create a clean modular architecture:
+## Project Structure
 
+A clean, modular architecture:
+
+```
 src/
  ├── main.rs
  ├── routes/
@@ -68,225 +63,205 @@ src/
  │    ├── orders.rs
  │    ├── users.rs
  │    ├── positions.rs
- │
  ├── engine/
  │    ├── matching.rs
  │    ├── orderbook.rs
  │    ├── settlement.rs
- │
  ├── models/
  │    ├── market.rs
  │    ├── order.rs
  │    ├── trade.rs
  │    ├── user.rs
  │    ├── position.rs
- │
  ├── state.rs
  ├── errors.rs
  └── utils.rs
+```
 
-========================
-MODELS
-========================
+---
 
-Implement these models:
+## Models
 
-1. Market
-2. Order
-3. Trade
-4. User
-5. Position
+- **Market**
+- **Order**
+- **Trade**
+- **User**
+- **Position**
 
-========================
-MARKET MODEL
-========================
+---
 
-Fields:
-- id
-- question
-- status
-- resolved_outcome
-- created_at
-
-Market status enum:
-- Active
-- Resolved
-
-Outcome enum:
-- Yes
-- No
-
-========================
-USER MODEL
-========================
+### Market Model
 
 Fields:
-- id
-- name
-- usd_balance
+- `id`
+- `question`
+- `status` (`Active` | `Resolved`)
+- `resolved_outcome` (`Yes` | `No`)
+- `created_at`
 
-========================
-POSITION MODEL
-========================
-
-Track YES/NO ownership per market.
+### User Model
 
 Fields:
-- user_id
-- market_id
-- yes_shares
-- no_shares
+- `id`
+- `name`
+- `usd_balance`
 
-========================
-ORDER MODEL
-========================
+### Position Model
 
-Fields:
-- id
-- user_id
-- market_id
-- side (Buy/Sell)
-- outcome (Yes/No)
-- price
-- quantity
-- remaining
-- timestamp
-
-========================
-TRADE MODEL
-========================
+Tracks YES/NO ownership per market.
 
 Fields:
-- id
-- market_id
-- buyer_id
-- seller_id
-- outcome
-- price
-- quantity
-- timestamp
+- `user_id`
+- `market_id`
+- `yes_shares`
+- `no_shares`
 
-========================
-ORDERBOOK DESIGN
-========================
+### Order Model
 
-Use:
-BTreeMap<u64, Vec<Order>>
+Fields:
+- `id`
+- `user_id`
+- `market_id`
+- `side` (`Buy` | `Sell`)
+- `outcome` (`Yes` | `No`)
+- `price`
+- `quantity`
+- `remaining`
+- `timestamp`
 
-Maintain:
-- bids_yes
-- asks_yes
-- bids_no
-- asks_no
+### Trade Model
 
-Implement price-time priority.
+Fields:
+- `id`
+- `market_id`
+- `buyer_id`
+- `seller_id`
+- `outcome` (`Yes` | `No`)
+- `price`
+- `quantity`
+- `timestamp`
 
-========================
-MATCHING ENGINE RULES
-========================
+---
 
-Trade executes when:
-best_bid >= best_ask
+## Orderbook Design
 
-Matching flow:
-1. incoming order checks opposite book
-2. execute trades
-3. support partial fills
-4. update positions
-5. update balances
-6. store remaining order in book
+- Use: `BTreeMap<u64, Vec<Order>>`
+- Maintain:
+  - `bids_yes`
+  - `asks_yes`
+  - `bids_no`
+  - `asks_no`
+- Implement price-time priority matching
 
-========================
-TRADING RULES
-========================
+---
 
-- limit orders only
-- price range: 1-99
-- quantity > 0
-- market must be active
+## Matching Engine Rules
 
-========================
-SPLIT LOGIC
-========================
+- **Trades execute when:** `best_bid >= best_ask`
+
+**Matching flow:**
+
+1. Incoming order checks opposite book
+2. Execute trades
+3. Support partial fills
+4. Update positions
+5. Update balances
+6. Store any remaining order in the book
+
+---
+
+## Trading Rules
+
+- Only **limit** orders
+- Price range: **1-99**
+- Quantity > 0
+- Market must be **active**
+
+---
+
+## Split Logic
 
 User converts USD into YES + NO shares.
 
-Example:
+**Example:**  
 Split $100:
-- subtract 100 USD
-- add 100 YES
-- add 100 NO
+- Subtract 100 USD
+- Add 100 YES
+- Add 100 NO
 
-========================
-MERGE LOGIC
-========================
+---
+
+## Merge Logic
 
 User redeems paired YES+NO into USD.
 
-Example:
+**Example:**  
 Merge 50:
-- remove 50 YES
-- remove 50 NO
-- add 50 USD
+- Remove 50 YES
+- Remove 50 NO
+- Add 50 USD
 
-========================
-SETTLEMENT LOGIC
-========================
+---
 
-Admin resolves market:
-- YES or NO
+## Settlement Logic
 
-Claim flow:
-winning shares convert into USD.
+- Admin resolves market (YES or NO)
+- Winning shares convert into USD at $1/share
 
-========================
-API ENDPOINTS
-========================
+---
 
-MARKETS
-POST   /markets
-GET    /markets
-GET    /markets/:id
-POST   /markets/:id/resolve
+## API Endpoints
 
-ORDERS
-POST   /orders
-DELETE /orders/:id
-GET    /markets/:id/orderbook
-GET    /markets/:id/trades
+### Markets
 
-TOKENS
-POST   /markets/:id/split
-POST   /markets/:id/merge
+- `POST   /markets`         - Create market
+- `GET    /markets`         - List markets
+- `GET    /markets/:id`     - Get market details
+- `POST   /markets/:id/resolve` - Resolve market
 
-USERS
-GET    /users/:id/balance
-GET    /users/:id/positions
+### Orders
 
-SETTLEMENT
-POST   /markets/:id/claim
+- `POST   /orders`                - Place order
+- `DELETE /orders/:id`            - Cancel order
+- `GET    /markets/:id/orderbook` - Get orderbook
+- `GET    /markets/:id/trades`    - Get trades
 
-========================
-IMPORTANT REQUIREMENTS
-========================
+### Tokens
 
-- clean modular code
-- proper Rust ownership patterns
-- no unwrap() abuse
-- proper error handling
-- serde serialization
-- async handlers
-- reusable engine functions
-- deterministic matching logic
+- `POST   /markets/:id/split`     - Split USD → YES/NO shares
+- `POST   /markets/:id/merge`     - Merge YES+NO → USD
 
-========================
-OPTIONAL FEATURES
-========================
+### Users
 
-After MVP:
-- websocket orderbook streaming
-- candlestick generation
-- persistent database
-- auth
-- market orders
-- event sourcing
+- `GET    /users/:id/balance`     - Get user balances
+- `GET    /users/:id/positions`   - Get user positions
+
+### Settlement
+
+- `POST   /markets/:id/claim`     - Claim winnings
+
+---
+
+## Important Requirements
+
+- Clean, modular code
+- Proper Rust ownership patterns
+- No `unwrap()` abuse
+- Good error handling
+- Serde serialization
+- Async handlers
+- Reusable engine functions
+- Deterministic matching logic
+
+---
+
+## Optional Features (Post-MVP)
+
+- WebSocket orderbook streaming
+- Candlestick generation
+- Persistent database
+- Authentication
+- Market orders
+- Event sourcing
+
+---
