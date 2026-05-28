@@ -1,31 +1,34 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub enum Outcome {
+    Yes,
+    No,
+}
 
-// Define market structs with macros for easier code flow ...
-
-#[derive(Serialize,Deserialize,Debug,Clone)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum MarketStatus {
     Active,
     Pending,
-    Resolved
+    Resolved,
 }
 
-#[derive(Serialize,Deserialize,Debug,Clone)]
-
-pub enum Outcome {
-    Yes,
-    No
-}
-
-
-#[derive(Serialize,Deserialize,Debug,Clone)]
-
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Market {
-    pub id : String,
-    pub question : String,
-    pub status : MarketStatus,
-    pub resolved_outcome : Option<Outcome>,
-    pub createdAt : DateTime<Utc>
-}
+    pub market_id: String,
 
+    pub question: String,
+
+    pub status: MarketStatus,
+
+    pub resolved_outcome: Option<Outcome>,
+
+    pub created_at: DateTime<Utc>,
+
+    pub expires_at: DateTime<Utc>,
+
+    pub volume: u64,
+
+    pub open_interest: u64,
+}

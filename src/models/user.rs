@@ -1,10 +1,38 @@
 use serde::{Deserialize, Serialize};
 
+use super::{
+    order::Order,
+    position::Position,
+};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct User {
+    pub auth_user: AuthUser,
 
-#[derive(Serialize,Deserialize,Debug,Clone)]
-pub struct User{
-    pub id : String,
-    pub name : String,
-    pub usd_balance : usize
+    pub trading_account: TradingAccount,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct AuthUser {
+    pub user_id: String,
+
+    pub username: String,
+
+    pub password: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct TradingAccount {
+    pub collateral: Collateral,
+
+    pub positions: Vec<Position>,
+
+    pub orders: Vec<Order>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Collateral {
+    pub available: u64,
+
+    pub locked: u64,
 }

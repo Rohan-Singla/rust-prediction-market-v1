@@ -1,19 +1,26 @@
-use std::{collections::HashMap, sync::{Arc, Mutex}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, Mutex},
+};
 
-use crate::models::{market::Market, order::Order, position::Position, trade::Trade, user::User};
+use crate::{
+    engine::orderbook::OrderBook,
+    models::{
+        market::{Market, Outcome},
+        trade::Trade,
+        user::User,
+    },
+};
 
+pub type SharedState = Arc<Mutex<AppState>>;
 
-pub struct AppState{
-    pub users : HashMap<String,User>,
+pub struct AppState {
+    pub users: HashMap<String, User>,
 
-    pub markets : HashMap<String,Market>,
+    pub markets: HashMap<String, Market>,
 
-    pub orders : HashMap<String,Order>,
+    // (market_id, outcome)
+    pub orderbooks: HashMap<(String, Outcome), OrderBook>,
 
-    pub positions : HashMap<(String,String),Position>,
-
-    pub trades:  Vec<Trade>
-
-
+    pub trades: Vec<Trade>,
 }
-pub type sharedState = Arc<Mutex<AppState>>;

@@ -1,12 +1,14 @@
 use serde::{Deserialize, Serialize};
 
+use super::market::Outcome;
 
-#[derive(Serialize,Deserialize,Clone,Debug)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Position {
+    pub market_id: String,
 
-    pub user_id : String,
-    pub market_id : String,
+    pub outcome: Outcome,
 
-    pub yes_shares: u64,
-    pub no_shares : u64,
+    pub quantity: u64,
+
+    pub average_price: u64,
 }
