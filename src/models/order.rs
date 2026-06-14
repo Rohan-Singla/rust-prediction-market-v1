@@ -1,17 +1,34 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-
-use super::market::Outcome;
+use uuid::Uuid;
+use chrono::{DateTime, Utc};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum Side {
-    Buy,
-    Sell,
+pub struct Order {
+    pub id: Uuid,
+
+    pub user_id: Uuid,
+
+    pub market_id: Uuid,
+
+    pub side: Side,
+
+    pub price: u64, // 0–100 or 0–1e6 scaled
+
+    pub quantity: u64,
+
+    pub remaining: u64,
+
+    pub status: OrderStatus,
+
+    pub created_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub enum OrderType {
-    Limit,
+pub enum Side {
+    BuyYes,
+    SellYes,
+    BuyNo,
+    SellNo,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -20,31 +37,4 @@ pub enum OrderStatus {
     PartiallyFilled,
     Filled,
     Cancelled,
-    Rejected,
-    Pending,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Order {
-    pub order_id: String,
-
-    pub market_id: String,
-
-    pub user_id: String,
-
-    pub outcome: Outcome,
-
-    pub side: Side,
-
-    pub quantity: u64,
-
-    pub filled_quantity: u64,
-
-    pub order_type: OrderType,
-
-    pub price: u64,
-
-    pub status: OrderStatus,
-
-    pub created_at: DateTime<Utc>,
 }

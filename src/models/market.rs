@@ -1,34 +1,34 @@
-use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
+use chrono::{DateTime, Utc};
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
-pub enum Outcome {
-    Yes,
-    No,
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct Market {
+    pub id: Uuid,
+
+    pub title: String,
+
+    pub description: String,
+
+    // e.g. "Will BTC > 100k by 2027?"
+    pub resolution_rule: String,
+
+    pub status: MarketStatus,
+
+    pub created_at: DateTime<Utc>,
+
+    pub closes_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum MarketStatus {
     Active,
-    Pending,
+    Closed,
     Resolved,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Market {
-    pub market_id: String,
-
-    pub question: String,
-
-    pub status: MarketStatus,
-
-    pub resolved_outcome: Option<Outcome>,
-
-    pub created_at: DateTime<Utc>,
-
-    pub expires_at: DateTime<Utc>,
-
-    pub volume: u64,
-
-    pub open_interest: u64,
+pub enum Outcome {
+    Yes,
+    No,
 }
